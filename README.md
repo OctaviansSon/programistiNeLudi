@@ -6,8 +6,4 @@
 **Team:** ProgramistiNeLudi
 **Semester:** Fall 2025  
 
-
-# Clone the repository
-git clone https://github.com/yourusername/thread-of-destiny.git
-
-# Open the project in Unity 2022.3+
+# Open the project in Unity 6
