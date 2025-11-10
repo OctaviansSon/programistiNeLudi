@@ -15,7 +15,10 @@ public class MenuController : MonoBehaviour
     public Button backButton;
 
     [Header("Audio")]
-    public AudioSource buttonClickSFX;
+    public AudioSource buttonClickSFX; // звук кнопки
+    public AudioSource musicSource; // музыка
+    public Slider musicSlider; // регулятор музыки
+    public Slider sfxSlider;   // регулятор SFX
 
     private void Start()
     {
@@ -25,12 +28,38 @@ public class MenuController : MonoBehaviour
         settingsButton.onClick.AddListener(() => { PlayClick(); OpenSettings(); });
         exitButton.onClick.AddListener(() => { PlayClick(); ExitGame(); });
         backButton.onClick.AddListener(() => { PlayClick(); CloseSettings(); });
+
+        // Привязка слайдеров громкости
+        if (musicSlider != null)
+            musicSlider.onValueChanged.AddListener(SetMusicVolume);
+
+        if (sfxSlider != null)
+            sfxSlider.onValueChanged.AddListener(SetSFXVolume);
+
+        // Установим начальные значения
+        if (musicSource != null && musicSlider != null)
+            musicSlider.value = musicSource.volume;
+
+        if (buttonClickSFX != null && sfxSlider != null)
+            sfxSlider.value = buttonClickSFX.volume;
     }
 
     void PlayClick()
     {
         if (buttonClickSFX != null)
             buttonClickSFX.Play();
+    }
+
+    void SetMusicVolume(float value)
+    {
+        if (musicSource != null)
+            musicSource.volume = value;
+    }
+
+    void SetSFXVolume(float value)
+    {
+        if (buttonClickSFX != null)
+            buttonClickSFX.volume = value;
     }
 
     void StartNewGame()
@@ -45,12 +74,12 @@ public class MenuController : MonoBehaviour
 
     void OpenSettings()
     {
-        settingsPanel.SetActive(true); // включаем панель
+        settingsPanel.SetActive(true);
     }
 
     void CloseSettings()
     {
-        settingsPanel.SetActive(false); // закрываем панель
+        settingsPanel.SetActive(false);
     }
 
     void ExitGame()
