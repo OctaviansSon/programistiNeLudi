@@ -20,7 +20,7 @@ public class PathChoiceController : MonoBehaviour
 
     private string spiritDesc = "Вы пойдёте к духам. Лут братьев недоступен, но боссы будут Hades-стиль.";
     private string humanDesc = "Вы пойдёте с беженцами. Связь с духами навсегда потеряна, только Hades-способности.";
-
+    [SerializeField] private float selectorOffsetX = -40f;
     void Start()
     {
         UpdateSelector();
@@ -52,23 +52,35 @@ public class PathChoiceController : MonoBehaviour
             if (selectedIndex == 0)
             {
                 GameManager.Instance.SetPathChoice(PathChoice.Spirit);
-                StartCoroutine(LoadNextScene("SpiritPathScene"));
+                PlayerPrefs.SetString("NextScene", "SpiritPathScene");
+                SceneManager.LoadScene("LoadingScreen");
             }
             else
             {
                 GameManager.Instance.SetPathChoice(PathChoice.Human);
-                StartCoroutine(LoadNextScene("HumanPathScene"));
+                PlayerPrefs.SetString("NextScene", "HumanPathScene");
+                SceneManager.LoadScene("LoadingScreen");
             }
         }
     }
 
     void UpdateSelector()
     {
-        // Меняем позицию селектора к выбранному варианту
-        selector.transform.position = selectedIndex == 0 ? spiritOption.transform.position + Vector3.left * 30f
-                                                          : refugeeOption.transform.position + Vector3.left * 30f;
-    }
+        TMP_Text target = selectedIndex == 0 ? spiritOption : refugeeOption;
 
+        // заставляем текст обновить mesh
+        target.ForceMeshUpdate();
+        var bounds = target.textBounds;
+
+        // позиция начала текста в локальных координатах
+        Vector3 localLeftPos = new Vector3(bounds.min.x, bounds.center.y, 0);
+
+        // переводим в мировые координаты
+        Vector3 worldLeftPos = target.transform.TransformPoint(localLeftPos);
+
+        // ставим селектор левее текста
+        selector.transform.position = worldLeftPos + new Vector3(selectorOffsetX, 0, 0);
+    }
     void UpdateDescription()
     {
         descriptionText.text = selectedIndex == 0 ? spiritDesc : humanDesc;
