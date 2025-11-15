@@ -15,51 +15,37 @@ public class MenuController : MonoBehaviour
     public Button backButton;
 
     [Header("Audio")]
-    public AudioSource buttonClickSFX; // звук кнопки
-    public AudioSource musicSource; // музыка
-    public Slider musicSlider; // регулятор музыки
-    public Slider sfxSlider;   // регулятор SFX
+    public AudioSource buttonClickSFX;
+    public Slider musicSlider;
+    public Slider sfxSlider;
 
     private void Start()
     {
-        // Привязка кнопок
+        // ---- КНОПКИ ----
         newGameButton.onClick.AddListener(() => { PlayClick(); StartNewGame(); });
         continueButton.onClick.AddListener(() => { PlayClick(); ContinueGame(); });
         settingsButton.onClick.AddListener(() => { PlayClick(); OpenSettings(); });
         exitButton.onClick.AddListener(() => { PlayClick(); ExitGame(); });
         backButton.onClick.AddListener(() => { PlayClick(); CloseSettings(); });
 
-        // Привязка слайдеров громкости
+        // ---- ГРОМКОВСТЬ ИЗ АУДИО МЕНЕДЖЕРА ----
         if (musicSlider != null)
-            musicSlider.onValueChanged.AddListener(SetMusicVolume);
+        {
+            musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1f);
+            musicSlider.onValueChanged.AddListener(v => AudioManager.Instance.SetMusicVolume(v));
+        }
 
         if (sfxSlider != null)
-            sfxSlider.onValueChanged.AddListener(SetSFXVolume);
-
-        // Установим начальные значения
-        if (musicSource != null && musicSlider != null)
-            musicSlider.value = musicSource.volume;
-
-        if (buttonClickSFX != null && sfxSlider != null)
-            sfxSlider.value = buttonClickSFX.volume;
+        {
+            sfxSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
+            sfxSlider.onValueChanged.AddListener(v => AudioManager.Instance.SetSFXVolume(v));
+        }
     }
 
     void PlayClick()
     {
         if (buttonClickSFX != null)
             buttonClickSFX.Play();
-    }
-
-    void SetMusicVolume(float value)
-    {
-        if (musicSource != null)
-            musicSource.volume = value;
-    }
-
-    void SetSFXVolume(float value)
-    {
-        if (buttonClickSFX != null)
-            buttonClickSFX.volume = value;
     }
 
     void StartNewGame()

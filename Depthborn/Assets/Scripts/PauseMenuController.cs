@@ -1,88 +1,87 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class PauseMenuController : MonoBehaviour
 {
     [Header("Panels")]
-    public CanvasGroup pausePanel;     // основное меню паузы
-    public GameObject settingsPanel;   // панель настроек
+    public CanvasGroup pausePanel;
+    public GameObject settingsPanel;
+
+    [Header("Buttons")]
+    public Button resumeButton;
+    public Button settingsButton;
+    public Button mainMenuButton;
 
     private bool isPaused = false;
 
     void Start()
     {
-        // при старте скрываем всё
-        HidePausePanel();
-        settingsPanel.SetActive(false);
+        // Кнопки
+        resumeButton.onClick.AddListener(ResumeGame);
+        settingsButton.onClick.AddListener(OpenSettings);
+        mainMenuButton.onClick.AddListener(MainMenu);
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // если настройки открыты → просто закрыть их
+            // Если открыты настройки — закрываем
             if (settingsPanel.activeSelf)
             {
                 CloseSettings();
                 return;
             }
 
-            // стандартное поведение ESC
             if (!isPaused) PauseGame();
             else ResumeGame();
         }
     }
 
-    // ---------- ПАУЗА ----------
-
     void PauseGame()
     {
         isPaused = true;
-        Time.timeScale = 0f;
-        ShowPausePanel();
-    }
+        Time.timeScale = 0;
 
-    public void ResumeGame()
-    {
-        isPaused = false;
-        Time.timeScale = 1f;
-        HidePausePanel();
-        settingsPanel.SetActive(false);
-    }
-
-    void ShowPausePanel()
-    {
         pausePanel.alpha = 1;
         pausePanel.interactable = true;
         pausePanel.blocksRaycasts = true;
     }
 
-    void HidePausePanel()
+    public void ResumeGame()
+    {
+        isPaused = false;
+        Time.timeScale = 1;
+
+        pausePanel.alpha = 0;
+        pausePanel.interactable = false;
+        pausePanel.blocksRaycasts = false;
+
+        settingsPanel.SetActive(false);
+    }
+
+    public void OpenSettings()
     {
         pausePanel.alpha = 0;
         pausePanel.interactable = false;
         pausePanel.blocksRaycasts = false;
-    }
 
-    // ---------- НАСТРОЙКИ ----------
-
-    public void OpenSettings()
-    {
-        HidePausePanel();
         settingsPanel.SetActive(true);
     }
 
     public void CloseSettings()
     {
         settingsPanel.SetActive(false);
-        ShowPausePanel();
-    }
 
-    // ---------- ВЫХОД ----------
+        pausePanel.alpha = 1;
+        pausePanel.interactable = true;
+        pausePanel.blocksRaycasts = true;
+    }
 
     public void MainMenu()
     {
-        Time.timeScale = 1f;
+        Time.timeScale = 1;
         SceneManager.LoadScene("MainMenu");
     }
 }
