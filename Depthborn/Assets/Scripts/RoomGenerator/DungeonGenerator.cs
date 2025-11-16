@@ -2,15 +2,31 @@ using UnityEngine;
 
 public class DungeonGenerator : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public GameObject roomPrefab;
+    public int gridSize = 3;
+    public float roomSpacing = 12f;
+
     void Start()
     {
-        
+        Generate();
     }
 
-    // Update is called once per frame
-    void Update()
+    void Generate()
     {
-        
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int y = 0; y < gridSize; y++)
+            {
+                if (Random.value < 0.45f) continue; // дырки в карте
+
+                Vector3 pos = new Vector3(
+                    x * roomSpacing,
+                    y * roomSpacing,
+                    0
+                );
+
+                Instantiate(roomPrefab, pos, Quaternion.identity);
+            }
+        }
     }
 }

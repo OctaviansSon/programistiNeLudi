@@ -2,15 +2,11 @@ using UnityEngine;
 
 public class Hitbox : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public int damage = 1;
 
-    // Update is called once per frame
-    void Update()
+    void OnTriggerEnter2D(Collider2D col)
     {
-        
+        if (col.TryGetComponent(out Enemy e))
+            e.Hit(damage);
     }
 }
