@@ -2,17 +2,13 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public float moveSpeed = 2f;
-    public int maxHP = 3;
+    public int hp = 3;
+    public float speed = 2f;
 
     Transform player;
-    int currentHP;
 
-    void Start()
-    {
-        player = GameObject.FindGameObjectWithTag("Player").transform;
-        currentHP = maxHP;
-    }
+    void Start() =>
+        player = GameObject.FindWithTag("Player").transform;
 
     void Update()
     {
@@ -20,13 +16,15 @@ public class Enemy : MonoBehaviour
         transform.position = Vector2.MoveTowards(
             transform.position,
             player.position,
-            moveSpeed * Time.deltaTime
+            speed * Time.deltaTime
         );
     }
 
     public void Hit(int dmg)
     {
-        currentHP -= dmg;
-        if (currentHP <= 0) Destroy(gameObject);
+        hp -= dmg;
+        Debug.Log($"☠ Enemy HP = {hp}");
+
+        if (hp <= 0) Destroy(gameObject);
     }
 }
