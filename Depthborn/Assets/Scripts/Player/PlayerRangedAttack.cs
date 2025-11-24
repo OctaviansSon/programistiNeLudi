@@ -8,7 +8,7 @@ public class PlayerRangedAttack : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButton(0) && Time.time > lastShoot + cooldown)
+        if (Input.GetMouseButton(0) && Time.time - lastShoot >= cooldown)
         {
             lastShoot = Time.time;
             Shoot();
@@ -17,10 +17,13 @@ public class PlayerRangedAttack : MonoBehaviour
 
     void Shoot()
     {
-        Vector3 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 dir = (mouse - transform.position).normalized;
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        Vector2 dir = (mouseWorld - transform.position);
+        dir.Normalize(); // нормализуем для правильного направления
 
         GameObject p = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
         p.GetComponent<Projectile>().Init(dir);
     }
 }
+  
