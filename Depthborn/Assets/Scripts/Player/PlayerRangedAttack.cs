@@ -18,12 +18,13 @@ public class PlayerRangedAttack : MonoBehaviour
     void Shoot()
     {
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorld.z = 0f; // ВАЖНО
 
         Vector2 dir = (mouseWorld - transform.position);
-        dir.Normalize(); // нормализуем для правильного направления
+        dir.Normalize();
 
         GameObject p = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-        p.GetComponent<Projectile>().Init(dir);
+        var proj = p.GetComponent<Projectile>();
+        if (proj != null) proj.Init(dir);
     }
 }
-  

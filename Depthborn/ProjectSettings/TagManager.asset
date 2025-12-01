@@ -3,17 +3,19 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Enemy
+  - Wall
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Enemy
+  - Projectiles
+  - Walls
   - 
   - 
   - 
@@ -38,8 +40,35 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 3175788685
+    locked: 0
+  - name: Ground
+    uniqueID: 4166662163
+    locked: 0
+  - name: Walls
+    uniqueID: 2970395059
+    locked: 0
+  - name: Props
+    uniqueID: 789368741
+    locked: 0
+  - name: Player
+    uniqueID: 2485727857
+    locked: 0
+  - name: Enemies
+    uniqueID: 2648447709
+    locked: 0
+  - name: Projectiles
+    uniqueID: 2319145819
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: UI
+    uniqueID: 3984730763
+    locked: 0
+  - name: DarkMask
+    uniqueID: 2988615599
     locked: 0
   m_RenderingLayers:
   - Default

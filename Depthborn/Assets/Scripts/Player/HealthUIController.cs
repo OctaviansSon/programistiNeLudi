@@ -11,45 +11,65 @@ public class HeartUIController : MonoBehaviour
     public Sprite halfHeart;
     public Sprite emptyHeart;
 
-    [Header("Shield Sprites")]
-    public Sprite fullShield;
-    public Sprite halfShield;
-    public Sprite emptyShield;
-
-    public GameObject heartPrefab;
-    public Transform heartsParent;
+    public GameObject heartPrefab; // должен содержать Image на корне
+    public Transform heartsParent; // RectTransform в Canvas (не дочерний у DontDestroyOnLoad объектов)
 
     List<Image> hearts = new List<Image>();
 
     void Start()
     {
-        player = FindFirstObjectByType<PlayerHealth>();
+        if (player == null)
+            player = FindObjectOfType<PlayerHealth>();
+
+        if (player == null)
+        {
+            Debug.LogError("HeartUIController: PlayerHealth not found in scene.");
+            return;
+        }
+
         player.HealthChanged += UpdateHearts;
 
         GenerateHearts();
         UpdateHearts();
     }
 
+    void OnDestroy()
+    {
+        if (player != null)
+            player.HealthChanged -= UpdateHearts;
+    }
+
     void GenerateHearts()
     {
         hearts.Clear();
 
+        // Очистим только дочерние элементы, если parent принадлежит активной сцене
+        if (heartsParent == null)
+        {
+            Debug.LogError("HeartUIController: heartsParent not assigned!");
+            return;
+        }
+
         foreach (Transform child in heartsParent)
             Destroy(child.gameObject);
 
-        int totalHearts = player.maxHP / 2;
+        int totalHearts = Mathf.CeilToInt(player.maxHP / 2.0f);
 
         for (int i = 0; i < totalHearts; i++)
         {
             GameObject h = Instantiate(heartPrefab, heartsParent);
-            hearts.Add(h.GetComponent<Image>());
+            Image img = h.GetComponent<Image>();
+            if (img == null)
+                img = h.AddComponent<Image>();
+            hearts.Add(img);
         }
     }
 
     public void UpdateHearts()
     {
-        int hp = player.hp;
+        if (hearts == null || player == null) return;
 
+        int hp = player.hp;
         for (int i = 0; i < hearts.Count; i++)
         {
             if (hp >= 2)

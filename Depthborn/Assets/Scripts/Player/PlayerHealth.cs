@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -15,21 +16,31 @@ public class PlayerHealth : MonoBehaviour
     public delegate void OnHealthChanged();
     public event OnHealthChanged HealthChanged;
 
+    void Start()
+    {
+        hp = Mathf.Clamp(hp, 0, maxHP);
+        shield = Mathf.Clamp(shield, 0, maxShield);
+        HealthChanged?.Invoke();
+    }
+
     public void TakeDamage(int dmg)
     {
         if (!canTakeDamage) return;
         StartCoroutine(DamageCD());
 
-        // сначала урон уходит в щиты
+        int remaining = dmg;
+
+        // сначала урон снимает щиты
         if (shield > 0)
         {
-            shield -= dmg;
-            if (shield < 0)
-                hp += shield; // shield был отрицательный → уходит в HP
+            int used = Mathf.Min(shield, remaining);
+            shield -= used;
+            remaining -= used;
         }
-        else
+
+        if (remaining > 0)
         {
-            hp -= dmg;
+            hp -= remaining;
         }
 
         hp = Mathf.Clamp(hp, 0, maxHP);
@@ -65,7 +76,9 @@ public class PlayerHealth : MonoBehaviour
     void Die()
     {
         Debug.Log("💀 Player died!");
-        FindFirstObjectByType<DeathMenu>().Show();
+        var death = FindObjectOfType<DeathMenu>();
+        if (death != null) death.Show();
+        Time.timeScale = 0f;
         gameObject.SetActive(false);
     }
 }

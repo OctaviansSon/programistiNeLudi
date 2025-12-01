@@ -13,10 +13,12 @@ public class Projectile : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
+    // dir — нормализованный вектор направления
     public void Init(Vector2 dir)
     {
         rb.linearVelocity = dir * speed;
-        transform.position = new Vector3(transform.position.x, transform.position.y, 0);
+        // гарантируем, что Z в 0 — чтобы камера 2D видела спрайт
+        Vector3 p = transform.position; p.z = 0; transform.position = p;
         Destroy(gameObject, 2f);
     }
 
@@ -29,7 +31,7 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        // чтобы не убивать пули о стены — проверяем тег
+        // если это стена (пометь Tilemap стен тегом "Wall"), убиваем пулю
         if (col.CompareTag("Wall"))
             Destroy(gameObject);
     }

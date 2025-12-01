@@ -6,12 +6,12 @@ public class DeathMenu : MonoBehaviour
 
     void Start()
     {
-        panel.SetActive(false);
+        if (panel != null) panel.SetActive(false);
     }
 
     public void Show()
     {
-        panel.SetActive(true);
+        if (panel != null) panel.SetActive(true);
         Time.timeScale = 0f;
     }
 
