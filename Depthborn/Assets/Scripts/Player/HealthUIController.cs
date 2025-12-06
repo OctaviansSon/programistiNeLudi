@@ -6,70 +6,44 @@ public class HeartUIController : MonoBehaviour
 {
     public PlayerHealth player;
 
-    [Header("Heart Sprites")]
+    [Header("Sprites")]
     public Sprite fullHeart;
     public Sprite halfHeart;
     public Sprite emptyHeart;
 
-    public GameObject heartPrefab; // должен содержать Image на корне
-    public Transform heartsParent; // RectTransform в Canvas (не дочерний у DontDestroyOnLoad объектов)
+    [Header("UI")]
+    public GameObject heartPrefab;
+    public Transform heartsParent;
 
-    List<Image> hearts = new List<Image>();
+    List<Image> hearts = new();
 
     void Start()
     {
-        if (player == null)
-            player = FindObjectOfType<PlayerHealth>();
-
-        if (player == null)
-        {
-            Debug.LogError("HeartUIController: PlayerHealth not found in scene.");
-            return;
-        }
-
-        player.HealthChanged += UpdateHearts;
-
         GenerateHearts();
-        UpdateHearts();
-    }
-
-    void OnDestroy()
-    {
-        if (player != null)
-            player.HealthChanged -= UpdateHearts;
+        player.HealthChanged += UpdateHearts;
     }
 
     void GenerateHearts()
     {
+        foreach (Transform t in heartsParent)
+            Destroy(t.gameObject);
+
         hearts.Clear();
 
-        // Очистим только дочерние элементы, если parent принадлежит активной сцене
-        if (heartsParent == null)
-        {
-            Debug.LogError("HeartUIController: heartsParent not assigned!");
-            return;
-        }
+        int heartCount = player.maxHP / 2;
 
-        foreach (Transform child in heartsParent)
-            Destroy(child.gameObject);
-
-        int totalHearts = Mathf.CeilToInt(player.maxHP / 2.0f);
-
-        for (int i = 0; i < totalHearts; i++)
+        for (int i = 0; i < heartCount; i++)
         {
             GameObject h = Instantiate(heartPrefab, heartsParent);
             Image img = h.GetComponent<Image>();
-            if (img == null)
-                img = h.AddComponent<Image>();
             hearts.Add(img);
         }
     }
 
-    public void UpdateHearts()
+    void UpdateHearts()
     {
-        if (hearts == null || player == null) return;
-
         int hp = player.hp;
+
         for (int i = 0; i < hearts.Count; i++)
         {
             if (hp >= 2)
@@ -80,7 +54,7 @@ public class HeartUIController : MonoBehaviour
             else if (hp == 1)
             {
                 hearts[i].sprite = halfHeart;
-                hp -= 1;
+                hp = 0;
             }
             else
             {

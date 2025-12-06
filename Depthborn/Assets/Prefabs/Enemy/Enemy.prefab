@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5637603322024663863}
   - component: {fileID: 5063203442091453423}
   - component: {fileID: 898248145894969247}
+  - component: {fileID: 6382419627395550435}
   m_Layer: 6
   m_Name: Enemy
   m_TagString: Enemy
@@ -76,7 +77,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1646519587
-  m_SortingLayer: 1
+  m_SortingLayer: -2
   m_SortingOrder: 0
   m_Sprite: {fileID: 8957324059118975939, guid: 5c8f168b1d9154046ac2275fb87d254d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -97,14 +98,14 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3850210497482157174}
-  m_BodyType: 1
+  m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -162,3 +163,19 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2.25, y: 2.25}
   m_EdgeRadius: 0
+--- !u!114 &6382419627395550435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3850210497482157174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70b1e16397710944ab50e7e07df70b0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hp: 3
+  speed: 2
+  contactDamage: 1
+  attackCooldown: 0.6

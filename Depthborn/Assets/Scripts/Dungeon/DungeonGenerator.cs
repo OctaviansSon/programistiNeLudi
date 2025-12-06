@@ -5,8 +5,9 @@ public class DungeonGenerator : MonoBehaviour
 {
     public GameObject roomPrefab;
     public int roomCount = 8;
-    public float spacing = 14f;
+    public float spacing = 0f; // 0 — вычислить автоматически
 
+    // map grid -> room
     public Dictionary<Vector2Int, DungeonRoom> rooms = new();
 
     Vector2Int[] directions = {
@@ -16,48 +17,97 @@ public class DungeonGenerator : MonoBehaviour
         Vector2Int.right
     };
 
-    void Start()
+    void Awake()
     {
+        // вычислим spacing если не задано
+        if (spacing <= 0f && roomPrefab != null)
+        {
+            GameObject tmp = Instantiate(roomPrefab);
+            Renderer r = tmp.GetComponentInChildren<Renderer>();
+            if (r != null)
+            {
+                Vector3 size = r.bounds.size;
+                spacing = Mathf.Max(size.x, size.y);
+            }
+            else spacing = 14f; // запасной вариант
+            Destroy(tmp);
+        }
+
         GenerateDungeon();
     }
 
     void GenerateDungeon()
     {
-        Vector2Int current = Vector2Int.zero;
-        CreateRoom(current, true, false);
+        if (roomPrefab == null)
+        {
+            Debug.LogError("DungeonGenerator: roomPrefab is null!");
+            return;
+        }
+
+        rooms.Clear();
+
+        // стартовая комната в (0,0)
+        Vector2Int start = Vector2Int.zero;
+        CreateRoom(start, true, false);
+
+        List<Vector2Int> frontier = new List<Vector2Int>();
+        AddFrontierNeighbors(start, frontier);
 
         for (int i = 1; i < roomCount; i++)
         {
-            Vector2Int next;
-            int tries = 0;
-
-            do
+            if (frontier.Count == 0)
             {
-                tries++;
-                next = current + directions[Random.Range(0, 4)];
-            }
-            while (rooms.ContainsKey(next) && tries < 50);
-
-            if (rooms.ContainsKey(next))
-            {
-                // слишком долго — ищем свободную позицию рудиментарно
-                bool found = false;
-                for (int x=-roomCount; x<=roomCount && !found; x++)
-                    for (int y=-roomCount; y<=roomCount && !found; y++)
-                        if (!rooms.ContainsKey(new Vector2Int(x,y))) { next = new Vector2Int(x,y); found = true; }
+                // если фронтир пуст — расширяем от любой существующей комнаты
+                List<Vector2Int> existing = new List<Vector2Int>(rooms.Keys);
+                Vector2Int pick = existing[Random.Range(0, existing.Count)];
+                AddFrontierNeighbors(pick, frontier);
+                if (frontier.Count == 0)
+                    break;
             }
 
-            CreateRoom(next, false, i == roomCount - 1);
-            ConnectRooms(current, next);
-            current = next;
+            int idx = Random.Range(0, frontier.Count);
+            Vector2Int pos = frontier[idx];
+            frontier.RemoveAt(idx);
+
+            CreateRoom(pos, false, i == roomCount - 1);
+
+            // соединяем с уже существующими соседями
+            foreach (var dir in directions)
+            {
+                Vector2Int neigh = pos + dir;
+                if (rooms.ContainsKey(neigh))
+                {
+                    ConnectRooms(pos, neigh);
+                }
+            }
+
+            AddFrontierNeighbors(pos, frontier);
+        }
+    }
+
+    void AddFrontierNeighbors(Vector2Int center, List<Vector2Int> frontier)
+    {
+        foreach (var d in directions)
+        {
+            Vector2Int p = center + d;
+            if (!rooms.ContainsKey(p) && !frontier.Contains(p))
+                frontier.Add(p);
         }
     }
 
     void CreateRoom(Vector2Int pos, bool start, bool boss)
     {
-        Vector3 worldPos = new Vector3(pos.x * spacing, pos.y * spacing, 0);
-        GameObject r = Instantiate(roomPrefab, worldPos, Quaternion.identity);
+        Vector3 worldPos = new Vector3(pos.x * spacing, pos.y * spacing, 0f);
+        GameObject r = Instantiate(roomPrefab, worldPos, Quaternion.identity, transform);
         DungeonRoom room = r.GetComponent<DungeonRoom>();
+
+        if (room == null)
+        {
+            Debug.LogError("roomPrefab missing DungeonRoom component!");
+            Destroy(r);
+            return;
+        }
+
         room.gridPos = pos;
         room.isStartRoom = start;
         room.isBossRoom = boss;
@@ -66,32 +116,67 @@ public class DungeonGenerator : MonoBehaviour
 
     void ConnectRooms(Vector2Int a, Vector2Int b)
     {
+        DungeonRoom A = rooms[a];
+        DungeonRoom B = rooms[b];
+
         Vector2Int dir = b - a;
-
-        if (!rooms.ContainsKey(a) || !rooms.ContainsKey(b)) return;
-
-        DungeonRoom R1 = rooms[a];
-        DungeonRoom R2 = rooms[b];
 
         if (dir == Vector2Int.up)
         {
-            if (R1.doorUp) { R1.doorUp.SetActive(true); R1.doorUp.GetComponent<Door>().leadsTo = R2; }
-            if (R2.doorDown) { R2.doorDown.SetActive(true); R2.doorDown.GetComponent<Door>().leadsTo = R1; }
+            ActivateDoorPair(
+                A.doorUp, Door.DoorSide.Up, B,
+                B.doorDown, Door.DoorSide.Down, A
+            );
         }
         else if (dir == Vector2Int.down)
         {
-            if (R1.doorDown) { R1.doorDown.SetActive(true); R1.doorDown.GetComponent<Door>().leadsTo = R2; }
-            if (R2.doorUp) { R2.doorUp.SetActive(true); R2.doorUp.GetComponent<Door>().leadsTo = R1; }
+            ActivateDoorPair(
+                A.doorDown, Door.DoorSide.Down, B,
+                B.doorUp, Door.DoorSide.Up, A
+            );
         }
         else if (dir == Vector2Int.left)
         {
-            if (R1.doorLeft) { R1.doorLeft.SetActive(true); R1.doorLeft.GetComponent<Door>().leadsTo = R2; }
-            if (R2.doorRight) { R2.doorRight.SetActive(true); R2.doorRight.GetComponent<Door>().leadsTo = R1; }
+            ActivateDoorPair(
+                A.doorLeft, Door.DoorSide.Left, B,
+                B.doorRight, Door.DoorSide.Right, A
+            );
         }
         else if (dir == Vector2Int.right)
         {
-            if (R1.doorRight) { R1.doorRight.SetActive(true); R1.doorRight.GetComponent<Door>().leadsTo = R2; }
-            if (R2.doorLeft) { R2.doorLeft.SetActive(true); R2.doorLeft.GetComponent<Door>().leadsTo = R1; }
+            ActivateDoorPair(
+                A.doorRight, Door.DoorSide.Right, B,
+                B.doorLeft, Door.DoorSide.Left, A
+            );
         }
+    }
+
+    void ActivateDoorPair(
+        GameObject doorObjA, Door.DoorSide sideA, DungeonRoom targetB,
+        GameObject doorObjB, Door.DoorSide sideB, DungeonRoom targetA)
+    {
+        if (doorObjA == null || doorObjB == null)
+        {
+            Debug.LogError("DungeonGenerator: one of door GameObjects is null. Check DungeonRoom door refs.");
+            return;
+        }
+
+        doorObjA.SetActive(true);
+        doorObjB.SetActive(true);
+
+        Door dA = doorObjA.GetComponent<Door>();
+        Door dB = doorObjB.GetComponent<Door>();
+
+        if (dA == null || dB == null)
+        {
+            Debug.LogError("DungeonGenerator: one of doors has no Door component.");
+            return;
+        }
+
+        dA.side = sideA;
+        dA.leadsTo = targetB;
+
+        dB.side = sideB;
+        dB.leadsTo = targetA;
     }
 }
