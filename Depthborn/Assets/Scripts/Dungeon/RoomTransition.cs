@@ -11,6 +11,9 @@ public class RoomTransition : MonoBehaviour
     public float fadeDuration = 0.3f;
     public Transform player;
 
+    // защита от параллельных переходов
+    bool isTransitioning = false;
+
     void Start()
     {
         if (gen == null) gen = FindFirstObjectByType<DungeonGenerator>();
@@ -31,67 +34,76 @@ public class RoomTransition : MonoBehaviour
 
         DeactivateAllRooms();
 
-        // стартовая точка — (0,0)
         if (!gen.rooms.TryGetValue(Vector2Int.zero, out currentRoom))
         {
             Debug.LogError("RoomTransition: no start room at (0,0)");
             return;
         }
 
-        EnterRoom(currentRoom, null);
+        // заходим в стартовую комнату
+        StartCoroutine(EnterRoomCoroutine(currentRoom, null));
     }
 
-    // ============================================================
-    //                   ВХОД В КОМНАТУ
-    // ============================================================
+    // публичный вход — теперь корутина, чтобы ставить флаг перехода
     public void EnterRoom(DungeonRoom room, Door.DoorSide? fromSide)
     {
+        if (isTransitioning) return;
+        StartCoroutine(EnterRoomCoroutine(room, fromSide));
+    }
+
+    IEnumerator EnterRoomCoroutine(DungeonRoom room, Door.DoorSide? fromSide)
+    {
+        isTransitioning = true;
+
         DeactivateAllRooms();
         room.gameObject.SetActive(true);
 
         currentRoom = room;
+
         MoveCamera(room);
 
         Vector3 spawnPos = CalculatePlayerPosition(room, fromSide);
         if (player != null)
             player.position = spawnPos;
 
+        // небольшая защита: если игрок пересекает зону двери — подталкиваем внутрь
+        FixPlayerIfInsideDoor(room);
+
+        // тёмная маска
         PlayFade(room);
 
-        // ВАЖНО!!! СНАЧАЛА СПАВН, ПОТОМ visited
+        // спавн мобов (сам метод внутри комнаты защитит от повторного спавна)
         room.SpawnEnemies();
+
+        // помечаем, что заходили
         room.visited = true;
 
+        // закрываем/открываем двери
         if (!room.cleared)
             CloseDoors(room);
         else
             OpenDoors(room);
-    }
 
+        // ждем конца кадра чтобы избежать мгновенных повторных срабатываний (безопасность)
+        yield return null;
+        isTransitioning = false;
+    }
 
     // ============================================================
     //                   ПОЗИЦИЯ ИГРОКА
     // ============================================================
     Vector3 CalculatePlayerPosition(DungeonRoom room, Door.DoorSide? fromSide)
     {
-        // Первое появление — спавн по playerSpawn
         if (!fromSide.HasValue)
         {
             if (room.playerSpawn != null)
                 return room.playerSpawn.position;
-
-            return room.transform.position; // fallback
+            return room.transform.position;
         }
 
-        // Зашли с правой — появляемся у левой двери комнаты
-        // Зашли с левой — у правой
-        // Зашли сверху — у нижней
-        // Зашли снизу — у верхней
         Door.DoorSide enterSide = Opposite(fromSide.Value);
 
-        // Ищем нужную дверь внутри новой комнаты
         Door door = FindDoor(room, enterSide);
-
         if (door == null)
         {
             Debug.LogWarning($"RoomTransition: room {room.name} has no door for side {enterSide}");
@@ -100,7 +112,6 @@ public class RoomTransition : MonoBehaviour
 
         Vector3 pos = door.transform.position;
 
-        // Сдвиг внутрь комнаты от двери
         switch (enterSide)
         {
             case Door.DoorSide.Up:    pos += Vector3.down * 1.2f;  break;
@@ -112,9 +123,6 @@ public class RoomTransition : MonoBehaviour
         return pos;
     }
 
-    // ============================================================
-    //                   ОТРАЖЕНИЕ СТОРОНЫ
-    // ============================================================
     Door.DoorSide Opposite(Door.DoorSide s)
     {
         switch (s)
@@ -127,35 +135,23 @@ public class RoomTransition : MonoBehaviour
         return s;
     }
 
-    // ============================================================
-    //                   ПОИСК ДВЕРИ
-    // ============================================================
     Door FindDoor(DungeonRoom room, Door.DoorSide side)
     {
         Door[] doors = room.GetComponentsInChildren<Door>(true);
-
         foreach (var d in doors)
-            if (d.side == side)
+            if (d != null && d.side == side)
                 return d;
-
         return null;
     }
 
-    // ============================================================
-    //                   КАМЕРА
-    // ============================================================
     void MoveCamera(DungeonRoom room)
     {
         if (cam == null) return;
-
         Vector3 camPos = room.transform.position;
         camPos.z = camZ;
         cam.transform.position = camPos;
     }
 
-    // ============================================================
-    //                   ТЁМНАЯ МАСКА
-    // ============================================================
     void PlayFade(DungeonRoom room)
     {
         if (room.darkMask != null)
@@ -179,23 +175,57 @@ public class RoomTransition : MonoBehaviour
     }
 
     // ============================================================
-    //                   ДВЕРИ
+    //                   ДВЕРИ (безопасно)
     // ============================================================
     void CloseDoors(DungeonRoom room)
     {
         foreach (Door d in room.GetComponentsInChildren<Door>(true))
+        {
+            if (d == null) continue;
+            // перед закрытием убедимся, что игрок не окажется внутри блокирующего коллайдера
             d.Close();
+        }
     }
 
     void OpenDoors(DungeonRoom room)
     {
         foreach (Door d in room.GetComponentsInChildren<Door>(true))
-            d.Open();
+            if (d != null)
+                d.Open();
     }
 
-    // ============================================================
-    //                   ДЕАКТИВАЦИЯ ВСЕХ КОМНАТ
-    // ============================================================
+    // если игрок в момент закрытия окажется внутри блокирующего коллайдера - подтолкнём внутрь
+    void FixPlayerIfInsideDoor(DungeonRoom room)
+    {
+        if (player == null) return;
+
+        Collider2D playerCol = player.GetComponent<Collider2D>();
+        foreach (Door d in room.GetComponentsInChildren<Door>(true))
+        {
+            if (d == null) continue;
+            Collider2D block = d.blockCol;
+            if (block == null) continue;
+
+            // если игрок коллайдер пересекается с блоком (или точка внутри), отодвинем
+            if (playerCol != null)
+            {
+                if (playerCol.IsTouching(block) || block.bounds.Contains(player.position))
+                {
+                    Vector3 dir = (room.transform.position - d.transform.position).normalized;
+                    player.position += dir * 0.6f; // мягкий сдвиг внутрь
+                }
+            }
+            else
+            {
+                if (block.bounds.Contains(player.position))
+                {
+                    Vector3 dir = (room.transform.position - d.transform.position).normalized;
+                    player.position += dir * 0.6f;
+                }
+            }
+        }
+    }
+
     void DeactivateAllRooms()
     {
         foreach (var kv in gen.rooms)
@@ -209,21 +239,12 @@ public class RoomTransition : MonoBehaviour
     void Update()
     {
         if (currentRoom == null) return;
+
+        // если не заходили или уже очищена — выходим
         if (!currentRoom.visited || currentRoom.cleared) return;
 
-        Enemy[] enemies = currentRoom.GetComponentsInChildren<Enemy>(true);
-        bool anyAlive = false;
-
-        foreach (var e in enemies)
-        {
-            if (e != null)
-            {
-                anyAlive = true;
-                break;
-            }
-        }
-
-        if (!anyAlive)
+        int alive = currentRoom.CountAliveEnemies();
+        if (alive <= 0)
         {
             currentRoom.cleared = true;
             OpenDoors(currentRoom);

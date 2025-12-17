@@ -11,6 +11,9 @@ public class Enemy : MonoBehaviour
     Transform player;
     float lastAttackTime = -10f;
 
+    // ключевой флаг для системы дверей
+    public bool isDead = false;
+
     void Start()
     {
         var p = GameObject.FindGameObjectWithTag("Player");
@@ -19,21 +22,39 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+        if (isDead) return; // мёртвый враг не двигается
         if (!player) return;
+
         transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
     }
 
     public void Hit(int dmg)
     {
-        hp -= dmg;
-        Debug.Log($"☠ Enemy HP = {hp}");
+        if (isDead) return;
 
-        if (hp <= 0) Destroy(gameObject);
+        hp -= dmg;
+
+        if (hp <= 0)
+        {
+            Die();
+        }
     }
 
-    // Если хочешь наносить урон при пересечении коллайдеров — используем OnCollisionEnter2D или OnTriggerStay2D с таймером
+    void Die()
+    {
+        isDead = true;
+
+        // выключаем объект сразу чтобы CountAliveEnemies() работал моментально
+        gameObject.SetActive(false);
+
+        // уничтожаем после кадра
+        Destroy(gameObject);
+    }
+
     void OnCollisionStay2D(Collision2D col)
     {
+        if (isDead) return;
+
         if (col.collider.CompareTag("Player"))
         {
             if (Time.time - lastAttackTime >= attackCooldown)
