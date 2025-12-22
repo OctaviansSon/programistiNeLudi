@@ -24,7 +24,6 @@ public class SettingsMenu : MonoBehaviour
 
     void SetSFXVolume(float value)
     {
-        // сюда можно подключить глобальный AudioManager для эффектов
         Debug.Log("SFX volume: " + value);
     }
 }

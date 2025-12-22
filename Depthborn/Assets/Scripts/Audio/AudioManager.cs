@@ -48,6 +48,11 @@ public class AudioManager : MonoBehaviour
             yield return null;
         }
     }
+    public void PlaySFX(AudioClip clip)
+    {
+        if (clip == null) return;
+        sfxSource.PlayOneShot(clip);
+    }
 
     public void ToggleMusicPause()
     {

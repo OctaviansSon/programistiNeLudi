@@ -24,11 +24,9 @@ public class SplashScreen : MonoBehaviour
             yield return null;
         }
 
-        // Включаем интерактивность, если нужно
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
 
-        // Задержка отображения
         yield return new WaitForSeconds(displayTime);
 
         // Fade Out

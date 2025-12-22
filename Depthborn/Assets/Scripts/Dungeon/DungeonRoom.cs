@@ -23,6 +23,8 @@ public class DungeonRoom : MonoBehaviour
 
     [Header("Visual")]
     public SpriteRenderer darkMask;
+    [Header("Boss")]
+    public GameObject bossPrefab;
 
     // локальный список созданных врагов (для корректного подсчёта)
     List<GameObject> spawnedEnemies = new List<GameObject>();
@@ -48,50 +50,58 @@ public class DungeonRoom : MonoBehaviour
             darkMask = transform.Find("DarkMask")?.GetComponent<SpriteRenderer>();
     }
 
-    // спавним врагов только раз (контролируем флаг enemiesSpawned отдельно от visited)
     public void SpawnEnemies()
     {
         if (enemiesSpawned) return;
 
-        if (spawnPoints == null || spawnPoints.Length == 0)
-        {
-            Debug.LogWarning($"Room {name} has no spawnPoints assigned!");
-            enemiesSpawned = true; // чтобы не пытаться снова
-            return;
-        }
-        if (enemies == null || enemies.Length == 0)
-        {
-            Debug.LogWarning($"Room {name} has no enemy prefabs!");
-            enemiesSpawned = true;
-            return;
-        }
-
         enemiesSpawned = true;
 
-        int count = Random.Range(2, 6); // можешь менять
+        if (isBossRoom)
+        {
+            SpawnBoss();
+            return;
+        }
+
+        if (spawnPoints == null || spawnPoints.Length == 0) return;
+        if (enemies == null || enemies.Length == 0) return;
+
+        int count = Random.Range(2, 6);
         for (int i = 0; i < count; i++)
         {
             Transform sp = spawnPoints[Random.Range(0, spawnPoints.Length)];
-            if (sp == null) continue;
             GameObject e = Instantiate(enemies[Random.Range(0, enemies.Length)], sp.position, Quaternion.identity, transform);
             spawnedEnemies.Add(e);
         }
     }
 
-    // корректный подсчёт "живых" врагов в комнате
+    void SpawnBoss()
+    {
+        if (bossPrefab == null)
+        {
+            Debug.LogError($"BossRoom {name}: bossPrefab NOT assigned!");
+            return;
+        }
+
+        Transform sp = (spawnPoints != null && spawnPoints.Length > 0)
+            ? spawnPoints[Random.Range(0, spawnPoints.Length)]
+            : transform;
+
+        GameObject boss = Instantiate(bossPrefab, sp.position, Quaternion.identity, transform);
+        spawnedEnemies.Add(boss);
+    }
+
+
+
     public int CountAliveEnemies()
     {
-        // обновим список созданных
         spawnedEnemies.RemoveAll(x => x == null);
 
         int count = spawnedEnemies.Count;
 
-        // плюс любые сторонние враги, которые могут быть добавлены вручную (сцена)
         Enemy[] other = GetComponentsInChildren<Enemy>(true);
         foreach (var en in other)
         {
             if (en == null) continue;
-            // если этот объект не в нашем spawnedEnemies - посчитаем его
             if (!spawnedEnemies.Contains(en.gameObject))
             {
                 if (en.gameObject.activeInHierarchy)

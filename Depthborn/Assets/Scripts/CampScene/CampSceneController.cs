@@ -29,19 +29,14 @@ public class CampSceneController : MonoBehaviour
 
     private IEnumerator ShowLore()
     {
-        // Fade-in лора
         yield return StartCoroutine(FadeCanvas(lorePanel, 0, 1, fadeDuration));
 
-        // Проигрываем аудио
         loreAudio?.Play();
 
-        // Ждем окончания аудио
         yield return new WaitForSeconds(loreAudio.clip.length);
 
-        // Fade-out лора
         yield return StartCoroutine(FadeCanvas(lorePanel, 1, 0, fadeDuration));
 
-        // Показываем панель выбора пути
         choicePanel.interactable = true;
         choicePanel.blocksRaycasts = true;
         choiceText.text = "Куда пойдёшь?";

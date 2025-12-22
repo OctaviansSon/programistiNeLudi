@@ -25,12 +25,10 @@ public class GameManager : MonoBehaviour
         if (choice == PathChoice.Spirit)
         {
             Debug.Log("Игрок лишен оружия братьев до конца игры");
-            // Здесь можно выключить Isaac-бафы
         }
         else if (choice == PathChoice.Human)
         {
             Debug.Log("Игрок теряет связь с духами навсегда");
-            // Здесь можно отключить духов
         }
     }
 }

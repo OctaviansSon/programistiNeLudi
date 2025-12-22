@@ -11,11 +11,9 @@ public class PauseSettingsController : MonoBehaviour
 
     void Start()
     {
-        // Ставим значения из AudioManager
         musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", AudioManager.Instance.musicSource.volume);
         sfxSlider.value = PlayerPrefs.GetFloat("SFXVolume", AudioManager.Instance.sfxSource.volume);
 
-        // Навешиваем листенеры
         musicSlider.onValueChanged.AddListener(SetMusicVolume);
         sfxSlider.onValueChanged.AddListener(SetSFXVolume);
 

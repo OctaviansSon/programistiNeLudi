@@ -1,24 +1,46 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerRangedAttack : MonoBehaviour
 {
     public GameObject projectilePrefab;
     public float cooldown = 0.25f;
-    float lastShoot;
 
-    void Update()
+    float lastShoot;
+    PlayerInputActions input;
+    Camera cam;
+
+    void Awake()
     {
-        if (Input.GetMouseButton(0) && Time.time - lastShoot >= cooldown)
-        {
-            lastShoot = Time.time;
-            Shoot();
-        }
+        input = new PlayerInputActions();
+        cam = Camera.main;
+    }
+
+    void OnEnable()
+    {
+        input.Enable();
+        input.Gameplay.Fire.performed += OnFire;
+    }
+
+    void OnDisable()
+    {
+        input.Gameplay.Fire.performed -= OnFire;
+        input.Disable();
+    }
+
+    void OnFire(InputAction.CallbackContext ctx)
+    {
+        if (Time.time - lastShoot < cooldown) return;
+
+        lastShoot = Time.time;
+        Shoot();
     }
 
     void Shoot()
     {
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorld.z = 0f; // ВАЖНО
+        Vector2 mouseScreen = input.Gameplay.Look.ReadValue<Vector2>();
+        Vector3 mouseWorld = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, cam.nearClipPlane));
+        mouseWorld.z = 0f;
 
         Vector2 dir = (mouseWorld - transform.position);
         dir.Normalize();

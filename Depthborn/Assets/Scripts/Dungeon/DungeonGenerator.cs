@@ -67,7 +67,6 @@ public class DungeonGenerator : MonoBehaviour
 
             CreateRoom(pos, false, i == roomCount - 1);
 
-            // соединяем с соседями — аккуратно, чтобы не переписывать связи неверно
             foreach (var dir in directions)
             {
                 Vector2Int neigh = pos + dir;
@@ -111,7 +110,6 @@ public class DungeonGenerator : MonoBehaviour
         room.isBossRoom = boss;
         rooms[pos] = room;
 
-        // выключаем двери по умолчанию (генератор потом активирует нужные)
         if (room.doorUp != null) room.doorUp.SetActive(false);
         if (room.doorDown != null) room.doorDown.SetActive(false);
         if (room.doorLeft != null) room.doorLeft.SetActive(false);
@@ -123,7 +121,6 @@ public class DungeonGenerator : MonoBehaviour
         DungeonRoom A = rooms[a];
         DungeonRoom B = rooms[b];
 
-        // проверяем, есть ли пара дверей что ведут друг к другу
         Door[] doorsA = A.GetComponentsInChildren<Door>(true);
         foreach (var d in doorsA)
         {

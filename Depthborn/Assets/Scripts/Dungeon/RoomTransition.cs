@@ -11,7 +11,6 @@ public class RoomTransition : MonoBehaviour
     public float fadeDuration = 0.3f;
     public Transform player;
 
-    // защита от параллельных переходов
     bool isTransitioning = false;
 
     void Start()
@@ -40,11 +39,9 @@ public class RoomTransition : MonoBehaviour
             return;
         }
 
-        // заходим в стартовую комнату
         StartCoroutine(EnterRoomCoroutine(currentRoom, null));
     }
 
-    // публичный вход — теперь корутина, чтобы ставить флаг перехода
     public void EnterRoom(DungeonRoom room, Door.DoorSide? fromSide)
     {
         if (isTransitioning) return;
@@ -66,25 +63,19 @@ public class RoomTransition : MonoBehaviour
         if (player != null)
             player.position = spawnPos;
 
-        // небольшая защита: если игрок пересекает зону двери — подталкиваем внутрь
         FixPlayerIfInsideDoor(room);
 
-        // тёмная маска
         PlayFade(room);
 
-        // спавн мобов (сам метод внутри комнаты защитит от повторного спавна)
         room.SpawnEnemies();
 
-        // помечаем, что заходили
         room.visited = true;
 
-        // закрываем/открываем двери
         if (!room.cleared)
             CloseDoors(room);
         else
             OpenDoors(room);
 
-        // ждем конца кадра чтобы избежать мгновенных повторных срабатываний (безопасность)
         yield return null;
         isTransitioning = false;
     }
@@ -182,7 +173,6 @@ public class RoomTransition : MonoBehaviour
         foreach (Door d in room.GetComponentsInChildren<Door>(true))
         {
             if (d == null) continue;
-            // перед закрытием убедимся, что игрок не окажется внутри блокирующего коллайдера
             d.Close();
         }
     }
@@ -194,7 +184,6 @@ public class RoomTransition : MonoBehaviour
                 d.Open();
     }
 
-    // если игрок в момент закрытия окажется внутри блокирующего коллайдера - подтолкнём внутрь
     void FixPlayerIfInsideDoor(DungeonRoom room)
     {
         if (player == null) return;
@@ -206,7 +195,6 @@ public class RoomTransition : MonoBehaviour
             Collider2D block = d.blockCol;
             if (block == null) continue;
 
-            // если игрок коллайдер пересекается с блоком (или точка внутри), отодвинем
             if (playerCol != null)
             {
                 if (playerCol.IsTouching(block) || block.bounds.Contains(player.position))

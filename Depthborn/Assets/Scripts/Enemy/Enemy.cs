@@ -8,47 +8,48 @@ public class Enemy : MonoBehaviour
     public int contactDamage = 1;
     public float attackCooldown = 0.6f;
 
-    Transform player;
-    float lastAttackTime = -10f;
+    protected EnemyAudio enemyAudio; // ← ПЕРЕИМЕНОВАЛИ
+    protected Transform player;
+    protected float lastAttackTime = -10f;
 
-    // ключевой флаг для системы дверей
     public bool isDead = false;
 
-    void Start()
+    protected virtual void Start()
     {
+        enemyAudio = GetComponent<EnemyAudio>();
+
         var p = GameObject.FindGameObjectWithTag("Player");
         if (p) player = p.transform;
     }
 
-    void Update()
+    protected virtual void Update()
     {
-        if (isDead) return; // мёртвый враг не двигается
-        if (!player) return;
+        if (isDead || !player) return;
 
-        transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(
+            transform.position,
+            player.position,
+            speed * Time.deltaTime
+        );
     }
 
-    public void Hit(int dmg)
+    public virtual void Hit(int dmg)
     {
         if (isDead) return;
 
         hp -= dmg;
+        enemyAudio?.PlayHit();
 
         if (hp <= 0)
-        {
             Die();
-        }
     }
 
-    void Die()
+    protected virtual void Die()
     {
         isDead = true;
+        enemyAudio?.PlayDeath();
 
-        // выключаем объект сразу чтобы CountAliveEnemies() работал моментально
-        gameObject.SetActive(false);
-
-        // уничтожаем после кадра
-        Destroy(gameObject);
+        Destroy(gameObject, 0.1f);
     }
 
     void OnCollisionStay2D(Collision2D col)

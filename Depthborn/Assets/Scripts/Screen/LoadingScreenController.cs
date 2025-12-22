@@ -27,7 +27,6 @@ public class LoadingScreenController : MonoBehaviour
 
     void Update()
     {
-        // вращаем иконку
         loadingIcon.transform.Rotate(0, 0, iconRotateSpeed * Time.deltaTime);
     }
 
@@ -41,14 +40,12 @@ public class LoadingScreenController : MonoBehaviour
         AsyncOperation op = SceneManager.LoadSceneAsync(targetScene);
         op.allowSceneActivation = false;
 
-        // анимация текста «Загрузка…»
         while (op.progress < 0.9f)
         {
             loadingText.text = "Загрузка" + new string('.', Mathf.FloorToInt(Time.time % 3) + 1);
             yield return null;
         }
 
-        // задержка для эффекта
         yield return new WaitForSeconds(0.5f);
 
         op.allowSceneActivation = true;

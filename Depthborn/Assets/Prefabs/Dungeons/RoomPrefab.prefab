@@ -343,6 +343,7 @@ MonoBehaviour:
   enemiesSpawned: 0
   playerSpawn: {fileID: 1606223260771872104}
   darkMask: {fileID: 7968377583583786299}
+  bossPrefab: {fileID: 3850210497482157174, guid: 3a02da10b473e49479a97b3283a33ef0, type: 3}
 --- !u!1 &5921036251367805553
 GameObject:
   m_ObjectHideFlags: 0

@@ -31,7 +31,6 @@ public class PathChoiceController : MonoBehaviour
     {
         if (choiceMade) return;
 
-        // Навигация через клавиши
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
             selectedIndex = 0;
@@ -45,7 +44,6 @@ public class PathChoiceController : MonoBehaviour
             UpdateDescription();
         }
 
-        // Подтверждение выбора
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
         {
             choiceMade = true;
@@ -68,17 +66,13 @@ public class PathChoiceController : MonoBehaviour
     {
         TMP_Text target = selectedIndex == 0 ? spiritOption : refugeeOption;
 
-        // заставляем текст обновить mesh
         target.ForceMeshUpdate();
         var bounds = target.textBounds;
 
-        // позиция начала текста в локальных координатах
         Vector3 localLeftPos = new Vector3(bounds.min.x, bounds.center.y, 0);
 
-        // переводим в мировые координаты
         Vector3 worldLeftPos = target.transform.TransformPoint(localLeftPos);
 
-        // ставим селектор левее текста
         selector.transform.position = worldLeftPos + new Vector3(selectorOffsetX, 0, 0);
     }
     void UpdateDescription()

@@ -13,13 +13,11 @@ public class Door : MonoBehaviour
 
     public DungeonRoom leadsTo;   // Комната, в которую ведёт
 
-    // debounce, чтобы одно нажатие не давало несколько вызовов
     float lastTriggerTime = -1f;
     const float triggerCooldown = 0.25f;
 
     void Awake()
     {
-        // попытаемся автоматом найти коллайдеры, если не назначены
         if (triggerCol == null || blockCol == null)
         {
             Collider2D[] cols = GetComponents<Collider2D>();
@@ -33,11 +31,9 @@ public class Door : MonoBehaviour
 
         if (sprite == null) sprite = GetComponent<SpriteRenderer>();
 
-        // корректная инициализация коллайдеров/вида
         InitializeColliders();
     }
 
-    // вызывается генератором, чтобы гарантировать что коллайдеры настроены
     public void InitializeColliders()
     {
         if (blockCol == null || triggerCol == null)
@@ -51,7 +47,6 @@ public class Door : MonoBehaviour
             }
         }
 
-        // если дверь помечена открытой — откроем корректно, иначе закроем
         if (isOpen) Open();
         else Close();
     }
@@ -68,7 +63,6 @@ public class Door : MonoBehaviour
     {
         isOpen = false;
         if (blockCol != null) blockCol.enabled = true;
-        // важно: когда дверь закрыта, отключаем trigger, чтобы игрок не оказался в overlap'е и не вызвал телепорт
         if (triggerCol != null) triggerCol.enabled = false;
         if (sprite != null) sprite.color = Color.red;
     }
@@ -94,7 +88,6 @@ public class Door : MonoBehaviour
             return;
         }
 
-        // передаём сторону, с которой выходим из текущей комнаты
         rt.EnterRoom(leadsTo, side);
     }
 }

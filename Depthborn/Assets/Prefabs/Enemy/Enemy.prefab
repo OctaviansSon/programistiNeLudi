@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5063203442091453423}
   - component: {fileID: 898248145894969247}
   - component: {fileID: 6382419627395550435}
+  - component: {fileID: 2321417883715441500}
   m_Layer: 6
   m_Name: Enemy
   m_TagString: Enemy
@@ -180,3 +181,18 @@ MonoBehaviour:
   contactDamage: 1
   attackCooldown: 0.6
   isDead: 0
+--- !u!114 &2321417883715441500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3850210497482157174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50eab31a0db17134884c7b66ccf529d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnSound: {fileID: 8300000, guid: 6f6a034c791e5ad49a2af0376716c992, type: 3}
+  hitSound: {fileID: 8300000, guid: 9ccd71f4f9199cf42b83298d953f4a42, type: 3}
+  deathSound: {fileID: 8300000, guid: cc8e9de58b38c6b479f3eafb2c54f472, type: 3}
