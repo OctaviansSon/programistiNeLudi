@@ -19,11 +19,12 @@ public class BossEnemy : Enemy
     {
         enemyAudio = GetComponent<EnemyAudio>();
 
-        int floorBonus = RunManager.Instance != null
-            ? RunManager.Instance.floor * 5
+        int bossBonus = RunManager.Instance != null
+            ? RunManager.Instance.BossHPBonus()
             : 0;
 
-        hp = baseBossHP + floorBonus;
+        hp = baseBossHP + bossBonus;
+
 
         sr = GetComponent<SpriteRenderer>();
         if (sr != null)

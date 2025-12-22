@@ -39,6 +39,11 @@ public class HeartUIController : MonoBehaviour
             hearts.Add(img);
         }
     }
+    public void Rebuild()
+    {
+        GenerateHearts();
+        UpdateHearts();
+    }
 
     void UpdateHearts()
     {

@@ -5,6 +5,7 @@ public class DungeonGenerator : MonoBehaviour
 {
     public GameObject roomPrefab;
     public float spacing = 0f; // 0 — вычислить автоматически
+    int roomCount;
 
     public Dictionary<Vector2Int, DungeonRoom> rooms = new();
 
@@ -29,6 +30,10 @@ public class DungeonGenerator : MonoBehaviour
             else spacing = 14f;
             Destroy(tmp);
         }
+        if (RunManager.Instance != null)
+            roomCount = RunManager.Instance.GetRoomCount();
+        else
+            roomCount = 6;
 
         GenerateDungeon();
     }

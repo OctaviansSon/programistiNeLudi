@@ -28,11 +28,19 @@ public class Enemy : MonoBehaviour
         var p = GameObject.FindGameObjectWithTag("Player");
         if (p) player = p.transform;
 
-        int floorBonus = RunManager.Instance != null
-            ? RunManager.Instance.floor * 2
+        int hpBonus = RunManager.Instance != null
+            ? RunManager.Instance.EnemyHPBonus()
             : 0;
 
-        hp = baseHP + floorBonus;
+        hp = baseHP + hpBonus;
+
+        if (RunManager.Instance != null)
+        {
+            contactDamage = Mathf.RoundToInt(
+                contactDamage * RunManager.Instance.enemyDamageMultiplier
+            );
+        }
+
     }
 
     protected virtual void Update()

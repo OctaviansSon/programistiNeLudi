@@ -10,8 +10,10 @@ public class PlayerStats : MonoBehaviour
     public void ApplyItem(ItemData item)
     {
         if (item.addHP > 0)
+        {
             health.maxHP += item.addHP;
-
+            health.Heal(item.addHP); // 🔥 ВАЖНО
+        }
         if (item.addShield > 0)
             health.AddShield(item.addShield);
 
