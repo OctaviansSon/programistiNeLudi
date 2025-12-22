@@ -3,15 +3,22 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class Enemy : MonoBehaviour
 {
-    public int hp = 3;
+    [Header("Stats")]
+    public int baseHP = 3;
     public float speed = 2f;
     public int contactDamage = 1;
     public float attackCooldown = 0.6f;
 
-    protected EnemyAudio enemyAudio; // ← ПЕРЕИМЕНОВАЛИ
+    [Header("Drop")]
+    public ItemDropTable dropTable;
+    public GameObject itemPickupPrefab;
+    [Range(0f, 1f)] public float dropChance = 0.15f;
+
+    protected EnemyAudio enemyAudio;
     protected Transform player;
     protected float lastAttackTime = -10f;
 
+    protected int hp;
     public bool isDead = false;
 
     protected virtual void Start()
@@ -20,6 +27,12 @@ public class Enemy : MonoBehaviour
 
         var p = GameObject.FindGameObjectWithTag("Player");
         if (p) player = p.transform;
+
+        int floorBonus = RunManager.Instance != null
+            ? RunManager.Instance.floor * 2
+            : 0;
+
+        hp = baseHP + floorBonus;
     }
 
     protected virtual void Update()
@@ -49,7 +62,21 @@ public class Enemy : MonoBehaviour
         isDead = true;
         enemyAudio?.PlayDeath();
 
+        TryDropItem();
+
         Destroy(gameObject, 0.1f);
+    }
+
+    void TryDropItem()
+    {
+        if (dropTable == null || itemPickupPrefab == null) return;
+        if (Random.value > dropChance) return;
+
+        ItemData item = dropTable.GetRandomItem();
+        if (item == null) return;
+
+        GameObject p = Instantiate(itemPickupPrefab, transform.position, Quaternion.identity);
+        p.GetComponent<ItemPickup>().item = item;
     }
 
     void OnCollisionStay2D(Collision2D col)

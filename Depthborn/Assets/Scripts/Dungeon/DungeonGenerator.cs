@@ -4,7 +4,6 @@ using System.Collections.Generic;
 public class DungeonGenerator : MonoBehaviour
 {
     public GameObject roomPrefab;
-    public int roomCount = 8;
     public float spacing = 0f; // 0 — вычислить автоматически
 
     public Dictionary<Vector2Int, DungeonRoom> rooms = new();

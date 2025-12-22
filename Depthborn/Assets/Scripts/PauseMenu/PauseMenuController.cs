@@ -7,27 +7,33 @@ public class PauseMenuController : MonoBehaviour
     [Header("Panels")]
     public CanvasGroup pausePanel;
     public GameObject settingsPanel;
+    public GameObject gameplayUI;
 
     [Header("Buttons")]
     public Button resumeButton;
     public Button settingsButton;
     public Button mainMenuButton;
 
-    private bool isPaused = false;
+    bool isPaused = false;
 
     void Start()
     {
-        // Кнопки
         resumeButton.onClick.AddListener(ResumeGame);
         settingsButton.onClick.AddListener(OpenSettings);
         mainMenuButton.onClick.AddListener(MainMenu);
+
+        // стартовое состояние
+        pausePanel.alpha = 0;
+        pausePanel.interactable = false;
+        pausePanel.blocksRaycasts = false;
+
+        settingsPanel.SetActive(false);
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // Если открыты настройки — закрываем
             if (settingsPanel.activeSelf)
             {
                 CloseSettings();
@@ -42,7 +48,9 @@ public class PauseMenuController : MonoBehaviour
     void PauseGame()
     {
         isPaused = true;
-        Time.timeScale = 0;
+        Time.timeScale = 0f;
+
+        gameplayUI.SetActive(false);
 
         pausePanel.alpha = 1;
         pausePanel.interactable = true;
@@ -52,7 +60,9 @@ public class PauseMenuController : MonoBehaviour
     public void ResumeGame()
     {
         isPaused = false;
-        Time.timeScale = 1;
+        Time.timeScale = 1f;
+
+        gameplayUI.SetActive(true);
 
         pausePanel.alpha = 0;
         pausePanel.interactable = false;
@@ -61,7 +71,7 @@ public class PauseMenuController : MonoBehaviour
         settingsPanel.SetActive(false);
     }
 
-    public void OpenSettings()
+    void OpenSettings()
     {
         pausePanel.alpha = 0;
         pausePanel.interactable = false;
@@ -79,9 +89,10 @@ public class PauseMenuController : MonoBehaviour
         pausePanel.blocksRaycasts = true;
     }
 
-    public void MainMenu()
+
+    void MainMenu()
     {
-        Time.timeScale = 1;
+        Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
     }
 }

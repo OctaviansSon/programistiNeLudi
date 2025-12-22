@@ -176,15 +176,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a59c488a131a12d4bb2f6afab1ffef07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hp: 3
+  baseHP: 3
   speed: 2
   contactDamage: 1
   attackCooldown: 0.6
+  dropTable: {fileID: 11400000, guid: 9c2c2b5a291d1594ba7e62bcc6ebdca1, type: 2}
+  itemPickupPrefab: {fileID: 2631194602675368581, guid: 9626794d347bfbe4a8e6446d99ae5c66, type: 3}
+  dropChance: 1
   isDead: 0
-  maxHp: 55
+  baseBossHP: 20
   minionPrefab: {fileID: 3850210497482157174, guid: 4c7dcf5e672efab4d801aa9d634259ea, type: 3}
   minionsPerPhase: 3
   spawnRadius: 1.5
+  exitPortalPrefab: {fileID: 5539082326983826815, guid: f39dbf19d7a12c949a42ec4bbd9d729c, type: 3}
+  bossDropTable: {fileID: 11400000, guid: 9c2c2b5a291d1594ba7e62bcc6ebdca1, type: 2}
 --- !u!114 &-2839633850856685636
 MonoBehaviour:
   m_ObjectHideFlags: 0

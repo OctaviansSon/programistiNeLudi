@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 159f3201af9ce8d439668077ad7ec069, type: 3}
+  m_Name: Boss
+  m_EditorClassIdentifier: 
+  possibleItems:
+  - {fileID: 11400000, guid: 175da416bbc227b44b4cfb5f4aa25ed6, type: 2}

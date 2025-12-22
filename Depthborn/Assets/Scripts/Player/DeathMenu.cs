@@ -1,31 +1,59 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class DeathMenu : MonoBehaviour
 {
-    public GameObject panel;
+    [Header("UI")]
+    public CanvasGroup canvasGroup;
+
+    [Header("Buttons")]
+    public Button retryButton;
+    public Button mainMenuButton;
+
+    void Awake()
+    {
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
+
+        Hide();
+    }
 
     void Start()
     {
-        if (panel != null) panel.SetActive(false);
+        // жёсткая привязка кнопок
+        if (retryButton != null)
+            retryButton.onClick.AddListener(Retry);
+
+        if (mainMenuButton != null)
+            mainMenuButton.onClick.AddListener(MainMenu);
     }
 
     public void Show()
     {
-        if (panel != null) panel.SetActive(true);
         Time.timeScale = 0f;
+
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
     }
 
-    public void Restart()
+    public void Hide()
     {
-        Time.timeScale = 1f;
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name
-        );
+        canvasGroup.alpha = 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
     }
 
-    public void MainMenu()
+    void Retry()
     {
         Time.timeScale = 1f;
-        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    void MainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 }
