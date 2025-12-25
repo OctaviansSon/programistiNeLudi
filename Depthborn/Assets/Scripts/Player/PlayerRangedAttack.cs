@@ -12,20 +12,41 @@ public class PlayerRangedAttack : MonoBehaviour
 
     void Awake()
     {
+        // Input создаём в Awake — но камеру не кэшируем тут
         input = new PlayerInputActions();
+    }
+
+    void Start()
+    {
+        // Камеру берём в Start — тогда при перезагрузке сцены ссылка будет валидной
         cam = Camera.main;
     }
 
     void OnEnable()
     {
+        if (input == null) input = new PlayerInputActions();
         input.Enable();
         input.Gameplay.Fire.performed += OnFire;
     }
 
     void OnDisable()
     {
-        input.Gameplay.Fire.performed -= OnFire;
-        input.Disable();
+        if (input != null)
+            input.Gameplay.Fire.performed -= OnFire;
+
+        if (input != null)
+            input.Disable();
+    }
+
+    void OnDestroy()
+    {
+        // на всякий случай
+        if (input != null)
+        {
+            input.Gameplay.Fire.performed -= OnFire;
+            input.Disable();
+            input = null;
+        }
     }
 
     void OnFire(InputAction.CallbackContext ctx)
@@ -38,8 +59,13 @@ public class PlayerRangedAttack : MonoBehaviour
 
     void Shoot()
     {
+        if (cam == null)
+            cam = Camera.main;
+        if (cam == null) return; // если всё ещё нет камеры — выходим
+
         Vector2 mouseScreen = input.Gameplay.Look.ReadValue<Vector2>();
-        Vector3 mouseWorld = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, cam.nearClipPlane));
+        // Используем z = 0 для 2D (orthographic). После конвертации сбрасываем z.
+        Vector3 mouseWorld = cam.ScreenToWorldPoint(new Vector3(mouseScreen.x, mouseScreen.y, 0f));
         mouseWorld.z = 0f;
 
         Vector2 dir = (mouseWorld - transform.position);

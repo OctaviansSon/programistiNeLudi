@@ -46,7 +46,19 @@ public class EndingMenu : MonoBehaviour
     public void ContinueRun()
     {
         Time.timeScale = 1f;
+
+        // 1) сохраняем статы игрока (если есть)
+        var ph = FindFirstObjectByType<PlayerHealth>();
+        var ps = FindFirstObjectByType<PlayerStats>();
+        if (RunManager.Instance != null && (ph != null || ps != null))
+        {
+            RunManager.Instance.SavePlayerStats(ph, ps);
+        }
+
+        // 2) апдейт прогресса
         RunManager.Instance.NextFloor();
+
+        // 3) перезагружаем сцену (PlayerSpawner восстановит статы)
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class HeartUIController : MonoBehaviour
 {
-    public PlayerHealth player;
+    PlayerHealth player;
 
     [Header("Sprites")]
     public Sprite fullHeart;
@@ -17,10 +17,33 @@ public class HeartUIController : MonoBehaviour
 
     List<Image> hearts = new();
 
-    void Start()
+    void OnEnable()
     {
+        PlayerSpawner.OnPlayerSpawned += Init;
+    }
+
+    void OnDisable()
+    {
+        PlayerSpawner.OnPlayerSpawned -= Init;
+
+        if (player != null)
+            player.HealthChanged -= Rebuild;
+    }
+
+    void Init(PlayerHealth ph)
+    {
+        player = ph;
+        player.HealthChanged += Rebuild;
+
+        Rebuild();
+    }
+
+    void Rebuild()
+    {
+        if (player == null) return;
+
         GenerateHearts();
-        player.HealthChanged += UpdateHearts;
+        UpdateHearts();
     }
 
     void GenerateHearts()
@@ -30,41 +53,24 @@ public class HeartUIController : MonoBehaviour
 
         hearts.Clear();
 
-        int heartCount = player.maxHP / 2;
+        int count = player.maxHP / 2;
 
-        for (int i = 0; i < heartCount; i++)
+        for (int i = 0; i < count; i++)
         {
-            GameObject h = Instantiate(heartPrefab, heartsParent);
-            Image img = h.GetComponent<Image>();
+            Image img = Instantiate(heartPrefab, heartsParent).GetComponent<Image>();
             hearts.Add(img);
         }
-    }
-    public void Rebuild()
-    {
-        GenerateHearts();
-        UpdateHearts();
     }
 
     void UpdateHearts()
     {
         int hp = player.hp;
 
-        for (int i = 0; i < hearts.Count; i++)
+        foreach (var h in hearts)
         {
-            if (hp >= 2)
-            {
-                hearts[i].sprite = fullHeart;
-                hp -= 2;
-            }
-            else if (hp == 1)
-            {
-                hearts[i].sprite = halfHeart;
-                hp = 0;
-            }
-            else
-            {
-                hearts[i].sprite = emptyHeart;
-            }
+            if (hp >= 2) { h.sprite = fullHeart; hp -= 2; }
+            else if (hp == 1) { h.sprite = halfHeart; hp = 0; }
+            else h.sprite = emptyHeart;
         }
     }
 }

@@ -7,13 +7,24 @@ public class PlayerStats : MonoBehaviour
 
     public float damageMultiplier = 1f;
 
+    void Awake()
+    {
+        // 🔥 АВТОПОДХВАТ
+        if (health == null)
+            health = GetComponent<PlayerHealth>();
+
+        if (movement == null)
+            movement = GetComponent<PlayerMovement>();
+    }
+
     public void ApplyItem(ItemData item)
     {
         if (item.addHP > 0)
         {
             health.maxHP += item.addHP;
-            health.Heal(item.addHP); // 🔥 ВАЖНО
+            health.Heal(item.addHP);
         }
+
         if (item.addShield > 0)
             health.AddShield(item.addShield);
 

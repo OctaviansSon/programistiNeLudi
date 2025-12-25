@@ -45,7 +45,14 @@ public class Enemy : MonoBehaviour
 
     protected virtual void Update()
     {
-        if (isDead || !player) return;
+        if (isDead) return;
+
+        if (player == null)
+        {
+            var p = GameObject.FindGameObjectWithTag("Player");
+            if (p) player = p.transform;
+            return;
+        }
 
         transform.position = Vector2.MoveTowards(
             transform.position,
@@ -53,6 +60,7 @@ public class Enemy : MonoBehaviour
             speed * Time.deltaTime
         );
     }
+
 
     public virtual void Hit(int dmg)
     {

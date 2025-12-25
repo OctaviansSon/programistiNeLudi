@@ -9,10 +9,22 @@ public class RoomTransition : MonoBehaviour
 
     bool isTransitioning = false;
 
+    void OnEnable()
+    {
+        // подписка чтобы получить игрока, если он появится позже
+        PlayerSpawner.OnPlayerSpawned += OnPlayerSpawned;
+    }
+
+    void OnDisable()
+    {
+        PlayerSpawner.OnPlayerSpawned -= OnPlayerSpawned;
+    }
+
     void Start()
     {
         if (gen == null) gen = FindFirstObjectByType<DungeonGenerator>();
 
+        // пытаемся найти игрока в сцене (на случай, если он уже есть)
         if (player == null)
         {
             var p = GameObject.FindGameObjectWithTag("Player");
@@ -34,9 +46,30 @@ public class RoomTransition : MonoBehaviour
             return;
         }
 
+        // если игрок уже есть — поместим его в старт комнату и назначим камеру
+        if (player != null && currentRoom != null && currentRoom.playerSpawn != null)
+        {
+            player.position = currentRoom.playerSpawn.position;
+            CameraFollow cam = FindFirstObjectByType<CameraFollow>();
+            if (cam != null) cam.SetTarget(player);
+        }
+
         StartCoroutine(EnterRoomCoroutine(currentRoom, null));
     }
 
+    void OnPlayerSpawned(PlayerHealth ph)
+    {
+        if (ph == null) return;
+        player = ph.transform;
+
+        // ставим позицию в текущую комнату
+        if (currentRoom != null && currentRoom.playerSpawn != null)
+            player.position = currentRoom.playerSpawn.position;
+
+        // назначаем камере цель
+        CameraFollow cam = FindFirstObjectByType<CameraFollow>();
+        if (cam != null) cam.SetTarget(player);
+    }
 
     public void EnterRoom(DungeonRoom room, Door.DoorSide? fromSide)
     {
@@ -82,9 +115,7 @@ public class RoomTransition : MonoBehaviour
         isTransitioning = false;
     }
 
-
-    // ================= POSITION =================
-
+    // === остальной код оставляем без изменений ===
     Vector3 CalculatePlayerPosition(DungeonRoom room, Door.DoorSide? fromSide)
     {
         if (!fromSide.HasValue)
@@ -131,7 +162,6 @@ public class RoomTransition : MonoBehaviour
             if (d.side == side) return d;
         return null;
     }
-
 
     void CloseDoors(DungeonRoom room)
     {

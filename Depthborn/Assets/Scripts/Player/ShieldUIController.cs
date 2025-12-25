@@ -4,23 +4,37 @@ using System.Collections.Generic;
 
 public class ShieldUIController : MonoBehaviour
 {
-    public PlayerHealth player;
+    PlayerHealth player;
 
-    [Header("Sprites")]
     public Sprite fullShield;
     public Sprite halfShield;
     public Sprite emptyShield;
 
-    [Header("UI")]
     public GameObject shieldPrefab;
     public Transform shieldsParent;
 
     List<Image> shields = new();
 
-    void Start()
+    void OnEnable()
     {
-        GenerateShields();
+        PlayerSpawner.OnPlayerSpawned += Init;
+    }
+
+    void OnDisable()
+    {
+        PlayerSpawner.OnPlayerSpawned -= Init;
+
+        if (player != null)
+            player.HealthChanged -= UpdateShields;
+    }
+
+    void Init(PlayerHealth ph)
+    {
+        player = ph;
         player.HealthChanged += UpdateShields;
+
+        GenerateShields();
+        UpdateShields();
     }
 
     void GenerateShields()
@@ -30,12 +44,11 @@ public class ShieldUIController : MonoBehaviour
 
         shields.Clear();
 
-        int shieldCount = player.maxShield / 2;
+        int count = player.maxShield / 2;
 
-        for (int i = 0; i < shieldCount; i++)
+        for (int i = 0; i < count; i++)
         {
-            GameObject s = Instantiate(shieldPrefab, shieldsParent);
-            Image img = s.GetComponent<Image>();
+            Image img = Instantiate(shieldPrefab, shieldsParent).GetComponent<Image>();
             shields.Add(img);
         }
     }
@@ -44,22 +57,11 @@ public class ShieldUIController : MonoBehaviour
     {
         int shield = player.shield;
 
-        for (int i = 0; i < shields.Count; i++)
+        foreach (var s in shields)
         {
-            if (shield >= 2)
-            {
-                shields[i].sprite = fullShield;
-                shield -= 2;
-            }
-            else if (shield == 1)
-            {
-                shields[i].sprite = halfShield;
-                shield = 0;
-            }
-            else
-            {
-                shields[i].sprite = emptyShield;
-            }
+            if (shield >= 2) { s.sprite = fullShield; shield -= 2; }
+            else if (shield == 1) { s.sprite = halfShield; shield = 0; }
+            else s.sprite = emptyShield;
         }
     }
 }
